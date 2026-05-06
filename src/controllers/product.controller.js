@@ -68,7 +68,15 @@ export const getProductById = async (req, res) => {
 };
 
 export const createProduct = async (req, res) => {
-    const product = await Product.create(req.body);
+
+    const imageUrls = req.files
+        ? req.files.map(file => file.path)
+        : [];
+
+    const product = await Product.create({
+        ...req.body,
+        images: imageUrls
+    });
 
     res.status(201).json({
         success: true,

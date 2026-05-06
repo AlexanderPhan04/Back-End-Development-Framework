@@ -6,6 +6,12 @@ import productRoutes from "./routes/product.routes.js";
 import cartRoutes from "./routes/cart.routes.js";
 import orderRoutes from "./routes/order.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./swagger/swagger.js";
+import {
+    notFound,
+    errorHandler
+} from "./middlewares/error.middleware.js";
 
 const app = express();
 
@@ -18,11 +24,22 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/products", reviewRoutes);
 
+app.use(notFound);
+app.use(errorHandler);
+
+// Health Check
 app.get("/", (req, res) => {
     res.json({
         success: true,
         message: "ShopOnline API Running"
     });
 });
+
+// Swagger UI
+app.use(
+    "/api-docs",
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec)
+);
 
 export default app;
