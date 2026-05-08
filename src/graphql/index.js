@@ -1,3 +1,4 @@
+import express from "express";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@as-integrations/express5";
 import jwt from "jsonwebtoken";
@@ -6,6 +7,8 @@ import User from "../models/User.js";
 
 import { userTypeDefs } from "./schemas/user.schema.js";
 import { userResolvers } from "./resolvers/user.resolver.js";
+import { productTypeDefs } from "./schemas/product.schema.js";
+import { productResolvers } from "./resolvers/product.resolver.js";
 
 const getUserFromToken = async (req) => {
     const authHeader = req.headers.authorization || "";
@@ -27,21 +30,48 @@ const getUserFromToken = async (req) => {
 
 export const startApolloServer = async (app) => {
     const server = new ApolloServer({
-        typeDefs: [userTypeDefs],
-        resolvers: [userResolvers]
+        typeDefs: [
+            userTypeDefs,
+            productTypeDefs
+        ],
+        resolvers: [
+            userResolvers,
+            productResolvers
+        ]
     });
 
     await server.start();
 
     app.use(
         "/graphql",
+        express.json(),
         expressMiddleware(server, {
             context: async ({ req }) => {
-                const user = await getUserFromToken(req);
 
-                return {
-                    user
-                };
+                const authHeader = req.headers.authorization;
+
+                if (!authHeader?.startsWith("Bearer ")) {
+                    return { user: null };
+                }
+
+                const token = authHeader.split(" ")[1];
+
+                try {
+
+                    const decoded = jwt.verify(
+                        token,
+                        process.env.JWT_SECRET
+                    );
+
+                    const user = await User.findById(decoded.id);
+
+                    return { user };
+
+                } catch (error) {
+
+                    return { user: null };
+
+                }
             }
         })
     );

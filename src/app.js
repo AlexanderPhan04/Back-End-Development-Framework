@@ -16,6 +16,7 @@ import {
 const app = express();
 
 app.use(express.json());
+
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/categories", categoryRoutes);
@@ -23,9 +24,6 @@ app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/products", reviewRoutes);
-
-app.use(notFound);
-app.use(errorHandler);
 
 // Health Check
 app.get("/", (req, res) => {
