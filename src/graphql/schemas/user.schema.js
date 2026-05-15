@@ -14,6 +14,7 @@ export const userTypeDefs = `#graphql
 
     type Query {
         me: User
+        users: [User]
     }
 
     type Mutation {
@@ -27,5 +28,11 @@ export const userTypeDefs = `#graphql
             email: String!
             password: String!
         ): AuthResponse
+
+        updateProfile(
+            name: String
+            email: String
+            password: String
+        ): User
     }
 `;

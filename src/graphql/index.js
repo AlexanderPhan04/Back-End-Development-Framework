@@ -9,6 +9,12 @@ import { userTypeDefs } from "./schemas/user.schema.js";
 import { userResolvers } from "./resolvers/user.resolver.js";
 import { productTypeDefs } from "./schemas/product.schema.js";
 import { productResolvers } from "./resolvers/product.resolver.js";
+import { cartTypeDefs } from "./schemas/cart.schema.js";
+import { cartResolvers } from "./resolvers/cart.resolver.js";
+import { orderTypeDefs } from "./schemas/order.schema.js";
+import { orderResolvers } from "./resolvers/order.resolver.js";
+import { reviewTypeDefs } from "./schemas/review.schema.js";
+import { reviewResolvers } from "./resolvers/review.resolver.js";
 
 const getUserFromToken = async (req) => {
     const authHeader = req.headers.authorization || "";
@@ -32,11 +38,17 @@ export const startApolloServer = async (app) => {
     const server = new ApolloServer({
         typeDefs: [
             userTypeDefs,
-            productTypeDefs
+            productTypeDefs,
+            cartTypeDefs,
+            orderTypeDefs,
+            reviewTypeDefs
         ],
         resolvers: [
             userResolvers,
-            productResolvers
+            productResolvers,
+            cartResolvers,
+            orderResolvers,
+            reviewResolvers
         ]
     });
 

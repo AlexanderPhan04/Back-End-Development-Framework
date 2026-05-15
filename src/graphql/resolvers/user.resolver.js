@@ -12,12 +12,34 @@ const generateToken = (id) => {
     );
 };
 
+const requireAuth = (user) => {
+    if (!user) {
+        throw new Error("Authentication required");
+    }
+
+    return user;
+};
+
+const requireAdmin = (user) => {
+    requireAuth(user);
+
+    if (user.role !== "admin") {
+        throw new Error("Admin access only");
+    }
+};
+
 export const userResolvers = {
     Query: {
         me: async (_, __, { user }) => {
             if (!user) return null;
 
             return await User.findById(user._id);
+        },
+
+        users: async (_, __, { user }) => {
+            requireAdmin(user);
+
+            return await User.find().select("-password");
         }
     },
 
@@ -73,6 +95,50 @@ export const userResolvers = {
                 token,
                 user
             };
+        },
+
+        updateProfile: async (_, args, { user }) => {
+            requireAuth(user);
+
+            const {
+                name,
+                email,
+                password
+            } = args;
+
+            if (!name && !email && !password) {
+                throw new Error("At least one field is required");
+            }
+
+            const currentUser = await User.findById(user._id);
+
+            if (!currentUser) {
+                throw new Error("User not found");
+            }
+
+            if (email && email !== currentUser.email) {
+                const existingUser = await User.findOne({ email });
+
+                if (existingUser) {
+                    throw new Error("Email already exists");
+                }
+
+                currentUser.email = email;
+            }
+
+            if (name) {
+                currentUser.name = name;
+            }
+
+            if (password) {
+                if (password.length < 6) {
+                    throw new Error("Password must be at least 6 characters");
+                }
+
+                currentUser.password = await bcrypt.hash(password, 10);
+            }
+
+            return await currentUser.save();
         }
     }
 };

@@ -4,6 +4,13 @@ import User from "../models/User.js";
 
 import generateToken from "../utils/generateToken.js";
 
+const formatUser = (user) => ({
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role
+});
+
 export const register = async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -30,12 +37,7 @@ export const register = async (req, res) => {
         res.status(201).json({
             success: true,
             token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }
+            user: formatUser(user)
         });
 
     } catch (error) {
@@ -73,12 +75,7 @@ export const login = async (req, res) => {
         res.json({
             success: true,
             token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }
+            user: formatUser(user)
         });
     } catch (error) {
         res.status(500).json({
@@ -93,4 +90,52 @@ export const getProfile = async (req, res) => {
         success: true,
         user: req.user
     });
+};
+
+export const updateProfile = async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        if (email && email !== user.email) {
+            const existingUser = await User.findOne({ email });
+
+            if (existingUser) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Email already exists"
+                });
+            }
+
+            user.email = email;
+        }
+
+        if (name) {
+            user.name = name;
+        }
+
+        if (password) {
+            user.password = await bcrypt.hash(password, 10);
+        }
+
+        await user.save();
+
+        res.json({
+            success: true,
+            user: formatUser(user)
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
 };
