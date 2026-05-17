@@ -47,6 +47,8 @@ MONGO_URI=mongodb://localhost:27017/shoponline
 
 JWT_SECRET=your_jwt_secret
 
+JWT_EXPIRES_IN=7d
+
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
@@ -118,6 +120,14 @@ http://localhost:5000/api-docs
 
 GraphQL Sandbox:
 http://localhost:5000/graphql
+
+Checklist trước khi nộp:
+
+- README có link repo, hướng dẫn chạy, biến môi trường, seed script, Swagger và GraphQL endpoint.
+- `.env.example` có `PORT`, `MONGO_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN` và Cloudinary config.
+- Swagger UI cần chụp màn hình tại `http://localhost:5000/api-docs`.
+- GraphQL Sandbox cần chụp màn hình tại `http://localhost:5000/graphql`.
+- Video demo nên test login, một API public, một API admin/protected và một query GraphQL.
 🔑 Authentication
 
 Hệ thống sử dụng JWT Authentication.

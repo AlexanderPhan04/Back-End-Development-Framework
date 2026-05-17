@@ -9,7 +9,11 @@ import {
 
 import { protect } from "../middlewares/auth.middleware.js";
 import { admin } from "../middlewares/admin.middleware.js";
-import { validate } from "../middlewares/validate.middleware.js";
+import {
+    validate,
+    validateParams
+} from "../middlewares/validate.middleware.js";
+import { idParamSchema } from "../validations/common.validation.js";
 
 import {
     createCategorySchema,
@@ -113,7 +117,14 @@ router.post("/", protect, admin, validate(createCategorySchema), createCategory)
  *       404:
  *         description: Category not found
  */
-router.put("/:id", protect, admin, validate(updateCategorySchema), updateCategory);
+router.put(
+    "/:id",
+    protect,
+    admin,
+    validateParams(idParamSchema),
+    validate(updateCategorySchema),
+    updateCategory
+);
 
 /**
  * @swagger
@@ -140,6 +151,12 @@ router.put("/:id", protect, admin, validate(updateCategorySchema), updateCategor
  *       404:
  *         description: Category not found
  */
-router.delete("/:id", protect, admin, deleteCategory);
+router.delete(
+    "/:id",
+    protect,
+    admin,
+    validateParams(idParamSchema),
+    deleteCategory
+);
 
 export default router;

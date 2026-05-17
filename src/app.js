@@ -1,4 +1,8 @@
 import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+import rateLimit from "express-rate-limit";
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
@@ -15,6 +19,17 @@ import {
 
 const app = express();
 
+app.use(helmet({
+    contentSecurityPolicy: false
+}));
+app.use(cors());
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+app.use(rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 100,
+    standardHeaders: true,
+    legacyHeaders: false
+}));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
@@ -31,6 +46,10 @@ app.get("/", (req, res) => {
         success: true,
         message: "ShopOnline API Running"
     });
+});
+
+app.get("/favicon.ico", (req, res) => {
+    res.status(204).end();
 });
 
 // Swagger UI

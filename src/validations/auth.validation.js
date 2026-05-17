@@ -16,7 +16,7 @@ export const updateProfileSchema = z.object({
     email: z.string().email().optional(),
     password: z.string().min(6).optional()
 }).refine(
-    (data) => data.name || data.email || data.password,
+    (data) => Object.values(data).some(value => value !== undefined),
     {
         message: "At least one field is required",
         path: ["profile"]

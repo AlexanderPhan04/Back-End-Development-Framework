@@ -8,6 +8,7 @@ export const createOrder = async (req, res) => {
 
     if (!cart || cart.items.length === 0) {
         return res.status(400).json({
+            status: 400,
             success: false,
             message: "Cart is empty"
         });
@@ -58,6 +59,7 @@ export const getOrderById = async (req, res) => {
 
     if (!order) {
         return res.status(404).json({
+            status: 404,
             success: false,
             message: "Order not found"
         });
@@ -68,6 +70,7 @@ export const getOrderById = async (req, res) => {
         req.user.role !== "admin"
     ) {
         return res.status(403).json({
+            status: 403,
             success: false,
             message: "Not allowed to view this order"
         });
@@ -86,6 +89,7 @@ export const updateOrderStatus = async (req, res) => {
 
     if (!allowedStatus.includes(status)) {
         return res.status(400).json({
+            status: 400,
             success: false,
             message: "Invalid order status"
         });
@@ -95,6 +99,7 @@ export const updateOrderStatus = async (req, res) => {
 
     if (!order) {
         return res.status(404).json({
+            status: 404,
             success: false,
             message: "Order not found"
         });

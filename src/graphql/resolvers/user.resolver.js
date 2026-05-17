@@ -1,6 +1,12 @@
 import User from "../../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import {
+    loginSchema,
+    registerSchema,
+    updateProfileSchema
+} from "../../validations/auth.validation.js";
+import { parseGraphQLInput } from "../../utils/validateGraphql.js";
 
 const generateToken = (id) => {
     return jwt.sign(
@@ -45,7 +51,11 @@ export const userResolvers = {
 
     Mutation: {
         register: async (_, args) => {
-            const { name, email, password } = args;
+            const {
+                name,
+                email,
+                password
+            } = parseGraphQLInput(registerSchema, args);
 
             const existingUser = await User.findOne({ email });
 
@@ -71,7 +81,10 @@ export const userResolvers = {
         },
 
         login: async (_, args) => {
-            const { email, password } = args;
+            const {
+                email,
+                password
+            } = parseGraphQLInput(loginSchema, args);
 
             const user = await User.findOne({ email });
 
@@ -104,11 +117,7 @@ export const userResolvers = {
                 name,
                 email,
                 password
-            } = args;
-
-            if (!name && !email && !password) {
-                throw new Error("At least one field is required");
-            }
+            } = parseGraphQLInput(updateProfileSchema, args);
 
             const currentUser = await User.findById(user._id);
 
@@ -131,10 +140,6 @@ export const userResolvers = {
             }
 
             if (password) {
-                if (password.length < 6) {
-                    throw new Error("Password must be at least 6 characters");
-                }
-
                 currentUser.password = await bcrypt.hash(password, 10);
             }
 

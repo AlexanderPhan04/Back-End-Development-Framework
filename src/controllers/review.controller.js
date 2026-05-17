@@ -8,6 +8,7 @@ export const createReview = async (req, res) => {
 
     if (!product) {
         return res.status(404).json({
+            status: 404,
             success: false,
             message: "Product not found"
         });
@@ -20,6 +21,7 @@ export const createReview = async (req, res) => {
 
     if (existingReview) {
         return res.status(400).json({
+            status: 400,
             success: false,
             message: "You already reviewed this product"
         });

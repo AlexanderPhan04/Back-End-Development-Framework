@@ -8,7 +8,7 @@ export const getProducts = async (req, res) => {
         search,
         page = 1,
         limit = 10
-    } = req.query;
+    } = req.validatedQuery || req.query;
 
     const filter = {};
 
@@ -16,11 +16,11 @@ export const getProducts = async (req, res) => {
         filter.category = category;
     }
 
-    if (minPrice || maxPrice) {
+    if (minPrice !== undefined || maxPrice !== undefined) {
         filter.price = {};
 
-        if (minPrice) filter.price.$gte = Number(minPrice);
-        if (maxPrice) filter.price.$lte = Number(maxPrice);
+        if (minPrice !== undefined) filter.price.$gte = Number(minPrice);
+        if (maxPrice !== undefined) filter.price.$lte = Number(maxPrice);
     }
 
     if (search) {
@@ -56,6 +56,7 @@ export const getProductById = async (req, res) => {
 
     if (!product) {
         return res.status(404).json({
+            status: 404,
             success: false,
             message: "Product not found"
         });
@@ -95,6 +96,7 @@ export const updateProduct = async (req, res) => {
 
     if (!product) {
         return res.status(404).json({
+            status: 404,
             success: false,
             message: "Product not found"
         });
@@ -111,6 +113,7 @@ export const deleteProduct = async (req, res) => {
 
     if (!product) {
         return res.status(404).json({
+            status: 404,
             success: false,
             message: "Product not found"
         });

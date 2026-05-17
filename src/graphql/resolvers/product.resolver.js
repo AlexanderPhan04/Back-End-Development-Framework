@@ -1,65 +1,20 @@
 import Product from "../../models/Product.js";
 import Category from "../../models/Category.js";
+import {
+    createCategorySchema,
+    updateCategorySchema
+} from "../../validations/category.validation.js";
+import { idParamSchema } from "../../validations/common.validation.js";
+import {
+    createProductSchema,
+    productListGraphQLSchema,
+    updateProductSchema
+} from "../../validations/product.validation.js";
+import { parseGraphQLInput } from "../../utils/validateGraphql.js";
 
 const checkAdmin = (user) => {
     if (!user || user.role !== "admin") {
         throw new Error("Admin access only");
-    }
-};
-
-const hasProvidedField = (data) => {
-    return Object.values(data).some(value => value !== undefined);
-};
-
-const validateCategoryInput = (data, partial = false) => {
-    if (!partial && !data.name) {
-        throw new Error("Category name is required");
-    }
-
-    if (data.name !== undefined && data.name.trim().length < 2) {
-        throw new Error("Category name must be at least 2 characters");
-    }
-};
-
-const validateProductInput = (data, partial = false) => {
-    if (!partial) {
-        const requiredFields = [
-            "name",
-            "description",
-            "price",
-            "stock",
-            "category"
-        ];
-
-        const missingField = requiredFields.find(
-            field => data[field] === undefined || data[field] === null
-        );
-
-        if (missingField) {
-            throw new Error(`${missingField} is required`);
-        }
-    }
-
-    if (data.name !== undefined && data.name.trim().length < 2) {
-        throw new Error("Product name must be at least 2 characters");
-    }
-
-    if (
-        data.description !== undefined &&
-        data.description.trim().length < 5
-    ) {
-        throw new Error("Product description must be at least 5 characters");
-    }
-
-    if (data.price !== undefined && data.price < 0) {
-        throw new Error("Product price must be greater than or equal to 0");
-    }
-
-    if (
-        data.stock !== undefined &&
-        (!Number.isInteger(data.stock) || data.stock < 0)
-    ) {
-        throw new Error("Product stock must be a non-negative integer");
     }
 };
 
@@ -69,18 +24,23 @@ export const productResolvers = {
             return await Category.find();
         },
 
-        products: async (_, { filter = {}, pagination = {} }) => {
+        products: async (_, args) => {
+            const {
+                filter,
+                pagination
+            } = parseGraphQLInput(productListGraphQLSchema, args ?? {});
+
             const {
                 search,
                 category,
                 minPrice,
                 maxPrice
-            } = filter || {};
+            } = filter;
 
             const {
                 page = 1,
                 limit = 10
-            } = pagination || {};
+            } = pagination;
 
             const query = {};
 
@@ -88,11 +48,11 @@ export const productResolvers = {
                 query.category = category;
             }
 
-            if (minPrice || maxPrice) {
+            if (minPrice !== undefined || maxPrice !== undefined) {
                 query.price = {};
 
-                if (minPrice) query.price.$gte = minPrice;
-                if (maxPrice) query.price.$lte = maxPrice;
+                if (minPrice !== undefined) query.price.$gte = minPrice;
+                if (maxPrice !== undefined) query.price.$lte = maxPrice;
             }
 
             if (search) {
@@ -123,69 +83,108 @@ export const productResolvers = {
         },
 
         product: async (_, { id }) => {
-            return await Product.findById(id).populate("category");
+            const { id: productId } = parseGraphQLInput(
+                idParamSchema,
+                { id }
+            );
+
+            return await Product.findById(productId).populate("category");
         }
     },
 
     Mutation: {
         createCategory: async (_, args, { user }) => {
             checkAdmin(user);
-            validateCategoryInput(args);
+            const data = parseGraphQLInput(createCategorySchema, args);
 
-            return await Category.create(args);
+            return await Category.create(data);
         },
 
         updateCategory: async (_, { id, ...data }, { user }) => {
             checkAdmin(user);
+            const { id: categoryId } = parseGraphQLInput(
+                idParamSchema,
+                { id }
+            );
+            const categoryData = parseGraphQLInput(
+                updateCategorySchema,
+                data
+            );
 
-            if (!hasProvidedField(data)) {
-                throw new Error("At least one field is required");
-            }
-
-            validateCategoryInput(data, true);
-
-            return await Category.findByIdAndUpdate(
-                id,
-                data,
+            const category = await Category.findByIdAndUpdate(
+                categoryId,
+                categoryData,
                 { new: true }
             );
+
+            if (!category) {
+                throw new Error("Category not found");
+            }
+
+            return category;
         },
 
         deleteCategory: async (_, { id }, { user }) => {
             checkAdmin(user);
+            const { id: categoryId } = parseGraphQLInput(
+                idParamSchema,
+                { id }
+            );
 
-            await Category.findByIdAndDelete(id);
+            const category = await Category.findByIdAndDelete(categoryId);
+
+            if (!category) {
+                throw new Error("Category not found");
+            }
 
             return true;
         },
 
         createProduct: async (_, args, { user }) => {
             checkAdmin(user);
-            validateProductInput(args);
+            const data = parseGraphQLInput(createProductSchema, args);
 
-            return await Product.create(args);
+            const product = await Product.create(data);
+
+            return await Product.findById(product._id).populate("category");
         },
 
         updateProduct: async (_, { id, ...data }, { user }) => {
             checkAdmin(user);
+            const { id: productId } = parseGraphQLInput(
+                idParamSchema,
+                { id }
+            );
+            const productData = parseGraphQLInput(
+                updateProductSchema,
+                data
+            );
 
-            if (!hasProvidedField(data)) {
-                throw new Error("At least one field is required");
-            }
-
-            validateProductInput(data, true);
-
-            return await Product.findByIdAndUpdate(
-                id,
-                data,
+            const product = await Product.findByIdAndUpdate(
+                productId,
+                productData,
                 { new: true }
             ).populate("category");
+
+            if (!product) {
+                throw new Error("Product not found");
+            }
+
+            return product;
         },
 
         deleteProduct: async (_, { id }, { user }) => {
             checkAdmin(user);
+            const { id: productId } = parseGraphQLInput(
+                idParamSchema,
+                { id }
+            );
 
-            await Product.findByIdAndDelete(id);
+            const product = await Product.findByIdAndDelete(productId);
+
+            if (!product) {
+                throw new Error("Product not found");
+            }
 
             return true;
         }

@@ -11,10 +11,16 @@ import {
 
 import { protect } from "../middlewares/auth.middleware.js";
 import { admin } from "../middlewares/admin.middleware.js";
-import { validate } from "../middlewares/validate.middleware.js";
+import {
+    validate,
+    validateParams,
+    validateQuery
+} from "../middlewares/validate.middleware.js";
+import { idParamSchema } from "../validations/common.validation.js";
 
 import {
     createProductSchema,
+    productQuerySchema,
     updateProductSchema
 } from "../validations/product.validation.js";
 
@@ -71,7 +77,7 @@ const router = express.Router();
  *       200:
  *         description: Paginated product list
  */
-router.get("/", getProducts);
+router.get("/", validateQuery(productQuerySchema), getProducts);
 
 /**
  * @swagger
@@ -93,7 +99,7 @@ router.get("/", getProducts);
  *       404:
  *         description: Product not found
  */
-router.get("/:id", getProductById);
+router.get("/:id", validateParams(idParamSchema), getProductById);
 
 /**
  * @swagger
@@ -208,7 +214,14 @@ router.post(
  *       404:
  *         description: Product not found
  */
-router.put("/:id", protect, admin, validate(updateProductSchema), updateProduct);
+router.put(
+    "/:id",
+    protect,
+    admin,
+    validateParams(idParamSchema),
+    validate(updateProductSchema),
+    updateProduct
+);
 
 /**
  * @swagger
@@ -235,6 +248,12 @@ router.put("/:id", protect, admin, validate(updateProductSchema), updateProduct)
  *       404:
  *         description: Product not found
  */
-router.delete("/:id", protect, admin, deleteProduct);
+router.delete(
+    "/:id",
+    protect,
+    admin,
+    validateParams(idParamSchema),
+    deleteProduct
+);
 
 export default router;

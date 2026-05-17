@@ -6,7 +6,11 @@ import {
 } from "../controllers/review.controller.js";
 
 import { protect } from "../middlewares/auth.middleware.js";
-import { validate } from "../middlewares/validate.middleware.js";
+import {
+    validate,
+    validateParams
+} from "../middlewares/validate.middleware.js";
+import { idParamSchema } from "../validations/common.validation.js";
 import { createReviewSchema } from "../validations/review.validation.js";
 
 const router = express.Router();
@@ -61,7 +65,13 @@ const router = express.Router();
  *       404:
  *         description: Product not found
  */
-router.post("/:id/reviews", protect, validate(createReviewSchema), createReview);
+router.post(
+    "/:id/reviews",
+    protect,
+    validateParams(idParamSchema),
+    validate(createReviewSchema),
+    createReview
+);
 
 /**
  * @swagger
@@ -81,6 +91,10 @@ router.post("/:id/reviews", protect, validate(createReviewSchema), createReview)
  *       200:
  *         description: List of product reviews
  */
-router.get("/:id/reviews", getProductReviews);
+router.get(
+    "/:id/reviews",
+    validateParams(idParamSchema),
+    getProductReviews
+);
 
 export default router;

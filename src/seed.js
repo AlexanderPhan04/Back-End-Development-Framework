@@ -7,6 +7,9 @@ import bcrypt from "bcryptjs";
 import User from "./models/User.js";
 import Category from "./models/Category.js";
 import Product from "./models/Product.js";
+import Cart from "./models/Cart.js";
+import Order from "./models/Order.js";
+import Review from "./models/Review.js";
 
 const seedData = async () => {
     try {
@@ -18,6 +21,9 @@ const seedData = async () => {
         await User.deleteMany();
         await Category.deleteMany();
         await Product.deleteMany();
+        await Cart.deleteMany();
+        await Order.deleteMany();
+        await Review.deleteMany();
 
         console.log("Old data removed");
 

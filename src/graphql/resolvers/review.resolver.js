@@ -1,5 +1,8 @@
 import Product from "../../models/Product.js";
 import Review from "../../models/Review.js";
+import { productIdParamSchema } from "../../validations/common.validation.js";
+import { createReviewSchema } from "../../validations/review.validation.js";
+import { parseGraphQLInput } from "../../utils/validateGraphql.js";
 
 const requireAuth = (user) => {
     if (!user) {
@@ -7,20 +10,15 @@ const requireAuth = (user) => {
     }
 };
 
-const validateReview = (rating, comment) => {
-    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-        throw new Error("Rating must be an integer between 1 and 5");
-    }
-
-    if (!comment || comment.trim().length < 3) {
-        throw new Error("Comment must be at least 3 characters");
-    }
-};
-
 export const reviewResolvers = {
     Query: {
         productReviews: async (_, { productId }) => {
-            return await Review.find({ product: productId })
+            const data = parseGraphQLInput(
+                productIdParamSchema,
+                { productId }
+            );
+
+            return await Review.find({ product: data.productId })
                 .populate("user", "name email role")
                 .populate("product");
         }
@@ -29,9 +27,16 @@ export const reviewResolvers = {
     Mutation: {
         createReview: async (_, { productId, rating, comment }, { user }) => {
             requireAuth(user);
-            validateReview(rating, comment);
+            const productData = parseGraphQLInput(
+                productIdParamSchema,
+                { productId }
+            );
+            const reviewData = parseGraphQLInput(createReviewSchema, {
+                rating,
+                comment
+            });
 
-            const product = await Product.findById(productId);
+            const product = await Product.findById(productData.productId);
 
             if (!product) {
                 throw new Error("Product not found");
@@ -49,8 +54,8 @@ export const reviewResolvers = {
             const review = await Review.create({
                 user: user._id,
                 product: product._id,
-                rating,
-                comment
+                rating: reviewData.rating,
+                comment: reviewData.comment
             });
 
             const reviews = await Review.find({

@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { objectIdSchema } from "./common.validation.js";
 
 export const cartItemSchema = z.object({
-    productId: z.string().min(1),
+    productId: objectIdSchema,
     quantity: z.coerce.number().int().min(1)
 });

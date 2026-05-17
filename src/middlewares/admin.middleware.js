@@ -3,6 +3,7 @@ export const admin = (req, res, next) => {
         next();
     } else {
         res.status(403).json({
+            status: 403,
             success: false,
             message: "Admin access only"
         });

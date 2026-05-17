@@ -1,15 +1,12 @@
 import Cart from "../../models/Cart.js";
 import Product from "../../models/Product.js";
+import { cartItemSchema } from "../../validations/cart.validation.js";
+import { productIdParamSchema } from "../../validations/common.validation.js";
+import { parseGraphQLInput } from "../../utils/validateGraphql.js";
 
 const requireAuth = (user) => {
     if (!user) {
         throw new Error("Authentication required");
-    }
-};
-
-const validateQuantity = (quantity) => {
-    if (!Number.isInteger(quantity) || quantity < 1) {
-        throw new Error("Quantity must be a positive integer");
     }
 };
 
@@ -44,9 +41,12 @@ export const cartResolvers = {
     Mutation: {
         addToCart: async (_, { productId, quantity }, { user }) => {
             requireAuth(user);
-            validateQuantity(quantity);
+            const data = parseGraphQLInput(cartItemSchema, {
+                productId,
+                quantity
+            });
 
-            const product = await Product.findById(productId);
+            const product = await Product.findById(data.productId);
 
             if (!product) {
                 throw new Error("Product not found");
@@ -55,15 +55,15 @@ export const cartResolvers = {
             const cart = await getOrCreateCart(user._id);
 
             const existingItem = cart.items.find(
-                item => item.product.toString() === productId
+                item => item.product.toString() === data.productId
             );
 
             if (existingItem) {
-                existingItem.quantity += quantity;
+                existingItem.quantity += data.quantity;
             } else {
                 cart.items.push({
-                    product: productId,
-                    quantity
+                    product: data.productId,
+                    quantity: data.quantity
                 });
             }
 
@@ -74,7 +74,10 @@ export const cartResolvers = {
 
         updateCartItem: async (_, { productId, quantity }, { user }) => {
             requireAuth(user);
-            validateQuantity(quantity);
+            const data = parseGraphQLInput(cartItemSchema, {
+                productId,
+                quantity
+            });
 
             const cart = await Cart.findOne({ user: user._id });
 
@@ -83,14 +86,14 @@ export const cartResolvers = {
             }
 
             const item = cart.items.find(
-                item => item.product.toString() === productId
+                item => item.product.toString() === data.productId
             );
 
             if (!item) {
                 throw new Error("Item not found in cart");
             }
 
-            item.quantity = quantity;
+            item.quantity = data.quantity;
 
             await cart.save();
 
@@ -99,6 +102,10 @@ export const cartResolvers = {
 
         removeFromCart: async (_, { productId }, { user }) => {
             requireAuth(user);
+            const data = parseGraphQLInput(
+                productIdParamSchema,
+                { productId }
+            );
 
             const cart = await Cart.findOne({ user: user._id });
 
@@ -107,7 +114,7 @@ export const cartResolvers = {
             }
 
             cart.items = cart.items.filter(
-                item => item.product.toString() !== productId
+                item => item.product.toString() !== data.productId
             );
 
             await cart.save();

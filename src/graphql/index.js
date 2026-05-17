@@ -1,6 +1,6 @@
 import express from "express";
 import { ApolloServer } from "@apollo/server";
-import { expressMiddleware } from "@as-integrations/express5";
+import { expressMiddleware } from "@apollo/server/express4";
 import jwt from "jsonwebtoken";
 
 import User from "../models/User.js";
@@ -15,24 +15,6 @@ import { orderTypeDefs } from "./schemas/order.schema.js";
 import { orderResolvers } from "./resolvers/order.resolver.js";
 import { reviewTypeDefs } from "./schemas/review.schema.js";
 import { reviewResolvers } from "./resolvers/review.resolver.js";
-
-const getUserFromToken = async (req) => {
-    const authHeader = req.headers.authorization || "";
-
-    if (!authHeader.startsWith("Bearer ")) {
-        return null;
-    }
-
-    const token = authHeader.split(" ")[1];
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-        return await User.findById(decoded.id).select("-password");
-    } catch {
-        return null;
-    }
-};
 
 export const startApolloServer = async (app) => {
     const server = new ApolloServer({

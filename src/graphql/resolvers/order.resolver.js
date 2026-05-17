@@ -1,7 +1,8 @@
 import Cart from "../../models/Cart.js";
 import Order from "../../models/Order.js";
-
-const allowedStatus = ["pending", "processing", "shipped", "delivered"];
+import { idParamSchema } from "../../validations/common.validation.js";
+import { updateOrderStatusSchema } from "../../validations/order.validation.js";
+import { parseGraphQLInput } from "../../utils/validateGraphql.js";
 
 const requireAuth = (user) => {
     if (!user) {
@@ -38,8 +39,12 @@ export const orderResolvers = {
 
         order: async (_, { id }, { user }) => {
             requireAuth(user);
+            const { id: orderId } = parseGraphQLInput(
+                idParamSchema,
+                { id }
+            );
 
-            const order = await populateOrder(id);
+            const order = await populateOrder(orderId);
 
             if (!order) {
                 throw new Error("Order not found");
@@ -100,18 +105,22 @@ export const orderResolvers = {
 
         updateOrderStatus: async (_, { id, status }, { user }) => {
             requireAdmin(user);
+            const { id: orderId } = parseGraphQLInput(
+                idParamSchema,
+                { id }
+            );
+            const data = parseGraphQLInput(
+                updateOrderStatusSchema,
+                { status }
+            );
 
-            if (!allowedStatus.includes(status)) {
-                throw new Error("Invalid order status");
-            }
-
-            const order = await Order.findById(id);
+            const order = await Order.findById(orderId);
 
             if (!order) {
                 throw new Error("Order not found");
             }
 
-            order.status = status;
+            order.status = data.status;
 
             await order.save();
 

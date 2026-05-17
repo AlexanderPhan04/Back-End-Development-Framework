@@ -9,7 +9,7 @@ export const updateCategorySchema = z.object({
     name: z.string().min(2).optional(),
     description: z.string().optional()
 }).refine(
-    (data) => data.name || data.description !== undefined,
+    (data) => Object.values(data).some(value => value !== undefined),
     {
         message: "At least one field is required",
         path: ["category"]

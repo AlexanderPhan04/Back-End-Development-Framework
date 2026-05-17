@@ -9,7 +9,11 @@ import {
 } from "../controllers/cart.controller.js";
 
 import { protect } from "../middlewares/auth.middleware.js";
-import { validate } from "../middlewares/validate.middleware.js";
+import {
+    validate,
+    validateParams
+} from "../middlewares/validate.middleware.js";
+import { productIdParamSchema } from "../validations/common.validation.js";
 import { cartItemSchema } from "../validations/cart.validation.js";
 
 const router = express.Router();
@@ -130,7 +134,12 @@ router.put("/update", protect, validate(cartItemSchema), updateCartItem);
  *       404:
  *         description: Cart not found
  */
-router.delete("/remove/:productId", protect, removeCartItem);
+router.delete(
+    "/remove/:productId",
+    protect,
+    validateParams(productIdParamSchema),
+    removeCartItem
+);
 
 /**
  * @swagger

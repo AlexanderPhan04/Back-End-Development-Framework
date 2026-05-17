@@ -65,6 +65,7 @@ export const updateCartItem = async (req, res) => {
 
     if (!cart) {
         return res.status(404).json({
+            status: 404,
             success: false,
             message: "Cart not found"
         });
@@ -76,6 +77,7 @@ export const updateCartItem = async (req, res) => {
 
     if (!item) {
         return res.status(404).json({
+            status: 404,
             success: false,
             message: "Item not found in cart"
         });
@@ -100,6 +102,7 @@ export const removeCartItem = async (req, res) => {
 
     if (!cart) {
         return res.status(404).json({
+            status: 404,
             success: false,
             message: "Cart not found"
         });
@@ -124,6 +127,7 @@ export const clearCart = async (req, res) => {
 
     if (!cart) {
         return res.status(404).json({
+            status: 404,
             success: false,
             message: "Cart not found"
         });

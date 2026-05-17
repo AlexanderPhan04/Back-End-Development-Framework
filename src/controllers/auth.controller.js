@@ -19,6 +19,7 @@ export const register = async (req, res) => {
 
         if (existingUser) {
             return res.status(400).json({
+                status: 400,
                 success: false,
                 message: "Email already exists"
             });
@@ -42,6 +43,7 @@ export const register = async (req, res) => {
 
     } catch (error) {
         res.status(500).json({
+            status: 500,
             success: false,
             message: error.message
         });
@@ -56,6 +58,7 @@ export const login = async (req, res) => {
 
         if (!user) {
             return res.status(401).json({
+                status: 401,
                 success: false,
                 message: "Invalid email or password"
             });
@@ -65,6 +68,7 @@ export const login = async (req, res) => {
 
         if (!isMatch) {
             return res.status(401).json({
+                status: 401,
                 success: false,
                 message: "Invalid email or password"
             });
@@ -79,6 +83,7 @@ export const login = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({
+            status: 500,
             success: false,
             message: error.message
         });
@@ -100,6 +105,7 @@ export const updateProfile = async (req, res) => {
 
         if (!user) {
             return res.status(404).json({
+                status: 404,
                 success: false,
                 message: "User not found"
             });
@@ -110,6 +116,7 @@ export const updateProfile = async (req, res) => {
 
             if (existingUser) {
                 return res.status(400).json({
+                    status: 400,
                     success: false,
                     message: "Email already exists"
                 });
@@ -134,6 +141,7 @@ export const updateProfile = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({
+            status: 500,
             success: false,
             message: error.message
         });

@@ -9,7 +9,11 @@ import {
 
 import { protect } from "../middlewares/auth.middleware.js";
 import { admin } from "../middlewares/admin.middleware.js";
-import { validate } from "../middlewares/validate.middleware.js";
+import {
+    validate,
+    validateParams
+} from "../middlewares/validate.middleware.js";
+import { idParamSchema } from "../validations/common.validation.js";
 import { updateOrderStatusSchema } from "../validations/order.validation.js";
 
 const router = express.Router();
@@ -80,7 +84,12 @@ router.get("/", protect, getOrders);
  *       404:
  *         description: Order not found
  */
-router.get("/:id", protect, getOrderById);
+router.get(
+    "/:id",
+    protect,
+    validateParams(idParamSchema),
+    getOrderById
+);
 
 /**
  * @swagger
@@ -122,6 +131,13 @@ router.get("/:id", protect, getOrderById);
  *       404:
  *         description: Order not found
  */
-router.put("/:id/status", protect, admin, validate(updateOrderStatusSchema), updateOrderStatus);
+router.put(
+    "/:id/status",
+    protect,
+    admin,
+    validateParams(idParamSchema),
+    validate(updateOrderStatusSchema),
+    updateOrderStatus
+);
 
 export default router;

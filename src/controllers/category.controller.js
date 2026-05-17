@@ -34,6 +34,7 @@ export const updateCategory = async (req, res) => {
 
     if (!category) {
         return res.status(404).json({
+            status: 404,
             success: false,
             message: "Category not found"
         });
@@ -50,6 +51,7 @@ export const deleteCategory = async (req, res) => {
 
     if (!category) {
         return res.status(404).json({
+            status: 404,
             success: false,
             message: "Category not found"
         });
